@@ -1,6 +1,43 @@
 #!/usr/bin/env ruby
-# bin/compile <build-dir> <cache-dir>
+require 'open3'
+def indent(string)
+  puts "       #{string}"
+end
 
-p ENV
-exit 0
+def print_results(output)
+  output.split(/\n/).map(&:indent)
+end
 
+puts "-----> Decrypting configuration settings"
+
+build_dir, cache_dir, env_dir = ARGV
+
+ENV["DOTENV_ENCRYPTION_KEY"] = File.read("#{env_dir}/DOTENV_ENCRYPTION_KEY")
+rails_env = File.read("#{env_dir}/RAILS_ENV")
+
+unless ENV["DOTENV_ENCRYPTION_KEY"]
+  indent("no DOTENV_ENCRYPTION_KEY specified")
+  exit 1
+end
+
+unless rails_env
+  indent("no RAILS_ENV specified")
+  exit 1
+end
+
+infile  = "#{build_dir}/.env.#{rails_env}.encrypted"
+outfile = "#{build_dir}/.env.#{rails_env}"
+
+indent("processing #{infile}")
+
+command = "openssl enc -aes-256-cbc -d -in #{infile} -out #{outfile} -pass env:DOTENV_ENCRYPTION_KEY"
+
+Open3.popen3(command) do |stdin, stdout, stderr, status|
+  if status.value.success?
+    print_results(stdout)
+    exit 0
+  else
+    print_results(stderr)
+    exit 1
+  end
+end
