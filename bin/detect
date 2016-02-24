@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+p ENV
+exit 1
