@@ -9,7 +9,7 @@ def print_results(output)
 end
 
 def slurp(filename)
-  File.read(slurp)
+  File.read(filename)
 rescue
   nil
 end
