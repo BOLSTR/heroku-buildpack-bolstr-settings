@@ -34,10 +34,10 @@ command = "openssl enc -aes-256-cbc -d -in #{infile} -out #{outfile} -pass env:D
 
 Open3.popen3(command) do |stdin, stdout, stderr, status|
   if status.value.success?
-    print_results(stdout)
+    print_results(stdout.read)
     exit 0
   else
-    print_results(stderr)
+    print_results(stderr.read)
     exit 1
   end
 end
