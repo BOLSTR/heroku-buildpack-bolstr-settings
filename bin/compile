@@ -5,28 +5,45 @@ def indent(string)
 end
 
 def print_results(output)
-  output.split(/\n/).map(&:indent)
+  output.split(/\n/).map { |s| indent(s) }
+end
+
+def slurp(filename)
+  File.read(slurp)
+rescue
+  nil
 end
 
 puts "-----> Decrypting configuration settings"
 
 build_dir, cache_dir, env_dir = ARGV
 
-ENV["DOTENV_ENCRYPTION_KEY"] = File.read("#{env_dir}/DOTENV_ENCRYPTION_KEY")
-rails_env = File.read("#{env_dir}/RAILS_ENV")
+ENV["DOTENV_ENCRYPTION_KEY"] = slurp("#{env_dir}/DOTENV_ENCRYPTION_KEY")
+dotenv_encrypted_name        = slurp("#{env_dir}/DOTENV_ENCRYPTED_FILE")
+dotenv_plaintext_name        = slurp("#{env_dir}/DOTENV_PLAINTEXT_FILE")
 
 unless ENV["DOTENV_ENCRYPTION_KEY"]
   indent("no DOTENV_ENCRYPTION_KEY specified")
   exit 1
 end
 
-unless rails_env
-  indent("no RAILS_ENV specified")
+unless dotenv_encrypted_name
+  indent("no DOTENV_ENCRYPTED_FILE specified")
   exit 1
 end
 
-infile  = "#{build_dir}/.env.#{rails_env}.encrypted"
-outfile = "#{build_dir}/.env.#{rails_env}"
+unless dotenv_plaintext_name
+  indent("no DOTENV_PLAINTEXT_NAME specified")
+  exit 1
+end
+
+infile  = "#{build_dir}/#{dotenv_encrypted_name}"
+outfile = "#{build_dir}/#{dotenv_plaintext_name}"
+
+unless File.exists?(infile)
+  indent("Can't find #{infile} to decrypt.")
+  exit 1
+end
 
 indent("processing #{infile}")
 
