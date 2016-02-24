@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 # bin/compile <build-dir> <cache-dir>
 
-ap ENV
+p ENV
 exit 0
 
